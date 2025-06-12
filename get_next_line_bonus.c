@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mlouron <mlouron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/23 12:03:50 by mlouron           #+#    #+#             */
-/*   Updated: 2025/06/04 10:38:55 by mlouron          ###   ########.fr       */
+/*   Created: 2025/05/28 09:50:02 by mlouron           #+#    #+#             */
+/*   Updated: 2025/06/04 10:41:29 by mlouron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 char	*stock_line(char *buf)
 {
@@ -67,42 +67,71 @@ char	*stock_rest(char *stash)
 
 char	*get_next_line(int fd)
 {
-	static char		*stash;
+	static char		*stash[1024];
 	char			*buf;
 	char			*line;
 	ssize_t			byte_read;
 
 	buf = malloc(BUFFER_SIZE + 1);
-	if (!buf)
-		return (NULL);
+	if (fd < 0 || fd >= 1024 || (!buf))
+		return (free(buf), NULL);
 	byte_read = 1;
-	while (byte_read > 0 && !ft_strchr(stash, '\n'))
+	while (byte_read > 0 && !ft_strchr(stash[fd], '\n'))
 	{
 		byte_read = read(fd, buf, BUFFER_SIZE);
 		if (byte_read == -1)
-			return (free(stash), free(buf), stash = NULL, NULL);
+			return (free(stash[fd]), free(buf), stash[fd] = NULL, NULL);
 		if (byte_read == 0)
 			break ;
 		buf[byte_read] = '\0';
-		stash = ft_strjoin(stash, buf);
+		stash[fd] = ft_strjoin(stash[fd], buf);
 	}
 	free(buf);
-	if (!stash || !*stash)
-		return (free(stash), stash = NULL, NULL);
-	line = stock_line(stash);
-	stash = stock_rest(stash);
+	if (!stash[fd] || !*stash[fd])
+		return (free(stash[fd]), stash[fd] = NULL, NULL);
+	line = stock_line(stash[fd]);
+	stash[fd] = stock_rest(stash[fd]);
 	return (line);
 }
 
-// int main(void)
+// int	main(void)
 // {
-// 	char *line;
-// 	int fd;
-// 	fd = open("test.txt", O_RDONLY);
-// 	while ((line = get_next_line(fd)) != NULL)
+// 	int		fd1, fd2, fd3;
+// 	char	*line1;
+// 	char	*line2;
+// 	char	*line3;
+
+// 	fd1 = open("test.txt", O_RDONLY);
+// 	fd2 = open("test1.txt", O_RDONLY);
+// 	fd3 = open("test2.txt", O_RDONLY);
+// 	if (fd1 < 0 || fd2 < 0 || fd3 < 0)
+// 		return (1);
+// 	line1 = get_next_line(fd1);
+// 	line2 = get_next_line(fd2);
+// 	line3 = get_next_line(fd3);
+// 	while (line1 || line2 || line3)
 // 	{
-// 		printf("%s", line);
-// 		free(line);
+// 		if (line1)
+// 		{
+// 			printf("fd1: %s", line1);
+// 			free(line1);
+// 			line1 = get_next_line(fd1);
+// 		}
+// 		if (line2)
+// 		{
+// 			printf("fd2: %s", line2);
+// 			free(line2);
+// 			line2 = get_next_line(fd2);
+// 		}
+// 		if (line3)
+// 		{
+// 			printf("fd3: %s", line3);
+// 			free(line3);
+// 			line3 = get_next_line(fd3);	
+// 		}
 // 	}
-// 	return 0;
+// 	close(fd1);
+// 	close(fd2);
+// 	close(fd3);
+// 	return (0);
 // }
